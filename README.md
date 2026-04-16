@@ -31,9 +31,37 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)
 * $\text{softmax}(x_i) \in (0, 1)$.
 * **Purpose**: Prevents saturation (winner-takes-all). Maintains $\frac{\partial L}{\partial x_i} > 0$ for non-dominant features, enabling gradient exploration.
 
+```python
+# The scaling operation (dividing by the square root of d_k) is achieved 
+# by this specific line in the MultiHeadAttention class:
+
+wei = q @ k.transpose(-2, -1) * (self.head_size ** -0.5)
+
+# ---------------------------------------------------------
+# Math to Code Mapping:
+# ---------------------------------------------------------
+
+# 1. q @ k.transpose(-2, -1)
+#    This calculates the dot product between the Query and the Key.
+#    Mathematical equivalent: Q * K^T
+
+# 2. self.head_size (represented as 'C' in your original code)
+#    This represents the feature dimension of a single Attention Head.
+#    Mathematical equivalent: d_k
+
+# 3. ** -0.5
+#    In Python, raising a value to the power of -0.5 is mathematically 
+#    equivalent to taking its square root and placing it in the denominator.
+#    Mathematical equivalent: x^(-0.5) = 1 / sqrt(x)
+
+# Conclusion:
+# This single line of code perfectly translates the Scaled Dot-Product formula:
+# (Q * K^T) / sqrt(d_k)
+```
 ### Layer Normalization (Scale Alignment)
 * **Pre-Norm (Stable/Modern)**: $x_{out} = x + \text{Sublayer}(\text{LayerNorm}(x))$. Protects direct identity gradient path $\nabla x = 1$.
 * **Post-Norm (Unstable)**: $x_{out} = \text{LayerNorm}(x + \text{Sublayer}(x))$. Scale misalignment between different Q and K/V sources causes vanishing/exploding gradients.
+
 
 ---
 
